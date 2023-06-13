@@ -7,11 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -57,8 +60,10 @@ class FeedFragment : Fragment() {
         })
         binding.list.adapter = adapter
 
-        lifecycleScope.launchWhenCreated {
-            viewModel.data.collectLatest(adapter::submitData)
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.data.collectLatest(adapter::submitData)
+            }
         }
 
         lifecycleScope.launchWhenCreated {
@@ -70,9 +75,7 @@ class FeedFragment : Fragment() {
                 }
         }
 
-        lifecycleScope.launchWhenCreated {
-            viewModel.data.collectLatest { adapter.refresh() }
-        }
+
 
         binding.swiperefresh.setOnRefreshListener(adapter::refresh)
 
