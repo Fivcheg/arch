@@ -74,7 +74,7 @@ class FeedFragment : Fragment() {
                 launch {
                     viewModel.data.collectLatest(adapter::submitData)
                 }
-
+// TODO refresh() here?
                 launch {
                     adapter.loadStateFlow.collect { state ->
                         binding.swiperefresh.isRefreshing =
