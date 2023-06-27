@@ -22,18 +22,14 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostRepository
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
-    @Inject
-    lateinit var repository: PostRepository
-
-    @Inject
-    lateinit var auth: AppAuth
     private val viewModel: PostViewModel by activityViewModels()
-
+    private val viewModelAuth: AuthViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -68,13 +64,16 @@ class FeedFragment : Fragment() {
         })
         binding.list.adapter = adapter
 
-
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.data.collectLatest(adapter::submitData)
                 }
-// TODO refresh() here?
+                launch {
+                    viewModelAuth.data.observe(viewLifecycleOwner) {
+                        adapter.refresh()
+                    }
+                }
                 launch {
                     adapter.loadStateFlow.collect { state ->
                         binding.swiperefresh.isRefreshing =
